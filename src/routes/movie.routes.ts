@@ -14,4 +14,6 @@ export const routes = (app: Application) => {
   app.delete('/api/v1/movies/:id', movieController.deleteMovieById);
 
   app.put('/api/v1/movies/:id', movieController.updateMovie);
+
+  app.get('/api/v1/movies', movieController.getMovies);
 };

@@ -99,6 +99,7 @@ const updateMovie = async (req: Request<{ id: string }>, res: Response) => {
       message: 'Movie details updated successfully',
     });
   } catch (error) {
+    console.error('Error in updateMovie controller:', error);
     return res.status(500).json({
       success: false,
       data: {},
@@ -108,11 +109,40 @@ const updateMovie = async (req: Request<{ id: string }>, res: Response) => {
   }
 };
 
+const getMovies = async (req: Request, res: Response) => {
+  try {
+    const movies = await movieService.fetchMovies(req.query);
+    if (movies && 'error' in movies) {
+      return res.status(movies.code).json({
+        success: false,
+        data: {},
+        error: movies.error,
+        message: 'Error while fetching movies with the provided filters',
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      data: movies,
+      error: {},
+      message: 'Movies fetched successfully',
+    });
+  } catch (error) {
+    console.error('Error in getMovies controller:', error);
+    return res.status(500).json({
+      success: false,
+      data: {},
+      error: error,
+      message: 'Error while fetching movies',
+    });
+  }
+};
+
 const movieController = {
   createMovie,
   getMovieById,
   deleteMovieById,
   updateMovie,
+  getMovies,
 };
 
 export default movieController;
