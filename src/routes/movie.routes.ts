@@ -2,7 +2,7 @@ import { Application } from 'express';
 import movieController from '../controllers/movie.controller';
 import { movieMiddlewares } from '../middlewares/movie.middlewares';
 
-export const routes = (app: Application) => {
+const movieRoutes = (app: Application) => {
   app.post(
     '/api/v1/movies',
     movieMiddlewares.validateMovieCreateRequest,
@@ -17,3 +17,5 @@ export const routes = (app: Application) => {
 
   app.get('/api/v1/movies', movieController.getMovies);
 };
+
+export default movieRoutes;

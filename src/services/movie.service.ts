@@ -1,5 +1,5 @@
 import { Movie } from '../types/movie.type';
-import { MovieModel } from '../models/movie.model';
+import MovieModel from '../models/movie.model';
 
 const createMovie = async (movieData: Movie): Promise<Movie> => {
   try {
