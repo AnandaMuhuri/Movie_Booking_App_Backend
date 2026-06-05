@@ -1,24 +1,16 @@
 import { Request, Response } from 'express';
 import { Movie } from '../types/movie.type';
 import movieService from '../services/movie.service';
+import { AppError } from '../utils/appError';
+import { sendError, sendSuccess } from '../utils/apiResponse';
 
 const createMovie = async (req: Request, res: Response) => {
   try {
     const movieData: Movie = req.body;
     const adddedMovie = await movieService.createMovie(movieData);
-    return res.status(201).json({
-      success: true,
-      data: adddedMovie,
-      error: {},
-      message: 'Movie created successfully',
-    });
+    return sendSuccess(res, 201, adddedMovie, 'Movie created successfully');
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      data: {},
-      error: error,
-      message: 'Failed to create movie',
-    });
+    return sendError(res, error, 'Failed to create movie');
   }
 };
 
@@ -27,26 +19,15 @@ const getMovieById = async (req: Request<{ id: string }>, res: Response) => {
     const movieId = req.params.id;
     const movie = await movieService.getMovieById(movieId);
     if (!movie) {
-      return res.status(404).json({
-        success: false,
-        data: {},
-        error: {},
-        message: 'Movie not found',
-      });
+      return sendError(
+        res,
+        new AppError('Movie not found', 404),
+        'Movie not found',
+      );
     }
-    return res.status(200).json({
-      success: true,
-      data: movie,
-      error: {},
-      message: 'Movie retrieved successfully',
-    });
+    return sendSuccess(res, 200, movie, 'Movie retrieved successfully');
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      data: {},
-      error: error,
-      message: 'Failed to retrieve movie',
-    });
+    return sendError(res, error, 'Failed to retrieve movie');
   }
 };
 
@@ -55,26 +36,15 @@ const deleteMovieById = async (req: Request<{ id: string }>, res: Response) => {
     const movieId = req.params.id;
     const deleted = await movieService.deleteMovieById(movieId);
     if (!deleted) {
-      return res.status(404).json({
-        success: false,
-        data: {},
-        error: {},
-        message: 'Movie not found',
-      });
+      return sendError(
+        res,
+        new AppError('Movie not found', 404),
+        'Movie not found',
+      );
     }
-    return res.status(200).json({
-      success: true,
-      data: {},
-      error: {},
-      message: 'Movie deleted successfully',
-    });
+    return sendSuccess(res, 200, {}, 'Movie deleted successfully');
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      data: {},
-      error: error,
-      message: 'Failed to delete movie',
-    });
+    return sendError(res, error, 'Failed to delete movie');
   }
 };
 
@@ -84,56 +54,26 @@ const updateMovie = async (req: Request<{ id: string }>, res: Response) => {
       req.params.id,
       req.body,
     );
-    if (response && 'error' in response) {
-      return res.status(response.code).json({
-        success: false,
-        data: {},
-        error: response.error,
-        message: 'Validation error while updating movie details',
-      });
-    }
-    return res.status(200).json({
-      success: true,
-      data: response,
-      error: {},
-      message: 'Movie details updated successfully',
-    });
+
+    return sendSuccess(
+      res,
+      200,
+      response,
+      'Movie details updated successfully',
+    );
   } catch (error) {
     console.error('Error in updateMovie controller:', error);
-    return res.status(500).json({
-      success: false,
-      data: {},
-      error: error,
-      message: 'Error while updating movie details',
-    });
+    return sendError(res, error, 'Error while updating movie details');
   }
 };
 
 const getMovies = async (req: Request, res: Response) => {
   try {
     const movies = await movieService.fetchMovies(req.query);
-    if (movies && 'error' in movies) {
-      return res.status(movies.code).json({
-        success: false,
-        data: {},
-        error: movies.error,
-        message: 'Error while fetching movies with the provided filters',
-      });
-    }
-    return res.status(200).json({
-      success: true,
-      data: movies,
-      error: {},
-      message: 'Movies fetched successfully',
-    });
+    return sendSuccess(res, 200, movies, 'Movies fetched successfully');
   } catch (error) {
     console.error('Error in getMovies controller:', error);
-    return res.status(500).json({
-      success: false,
-      data: {},
-      error: error,
-      message: 'Error while fetching movies',
-    });
+    return sendError(res, error, 'Error while fetching movies');
   }
 };
 

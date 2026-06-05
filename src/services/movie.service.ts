@@ -1,11 +1,23 @@
 import { Movie } from '../types/movie.type';
 import MovieModel from '../models/movie.model';
+import { AppError, getValidationErrors } from '../utils/appError';
 
 const createMovie = async (movieData: Movie): Promise<Movie> => {
   try {
     const addedMovie = await MovieModel.create(movieData);
     return addedMovie;
   } catch (error) {
+    const validationErrors = getValidationErrors(error);
+
+    if (validationErrors) {
+      console.error('Validation error:', validationErrors);
+      throw new AppError(
+        'Validation error while creating movie',
+        422,
+        validationErrors,
+      );
+    }
+
     console.error('Error creating movie:', error);
     throw error;
   }
@@ -34,7 +46,7 @@ const deleteMovieById = async (movieId: string): Promise<boolean> => {
 const updateMovieById = async (
   movieId: string,
   updateData: Partial<Movie>,
-): Promise<Movie | null | { error: Record<string, string>; code: number }> => {
+): Promise<Movie | null> => {
   try {
     const updatedMovie = await MovieModel.findByIdAndUpdate(
       movieId,
@@ -42,18 +54,20 @@ const updateMovieById = async (
       { new: true, runValidators: true },
     );
     return updatedMovie;
-  } catch (error: any) {
-    if (error.name === 'ValidationError') {
-      const err: Record<string, string> = {};
-      Object.keys(error.errors).forEach((key) => {
-        err[key] = error.errors[key].message;
-      });
-      console.error('Validation error:', err);
-      return { error: err, code: 422 };
-    } else {
-      console.error('Error updating movie:', error);
-      throw error;
+  } catch (error) {
+    const validationErrors = getValidationErrors(error);
+
+    if (validationErrors) {
+      console.error('Validation error:', validationErrors);
+      throw new AppError(
+        'Validation error while updating movie details',
+        422,
+        validationErrors,
+      );
     }
+
+    console.error('Error updating movie:', error);
+    throw error;
   }
 };
 
@@ -68,10 +82,11 @@ const fetchMovies = async (filter: any) => {
   try {
     const movies = await MovieModel.find(query);
     if (!movies) {
-      return {
-        error: 'No movies found matching the provided filters',
-        code: 404,
-      };
+      throw new AppError(
+        'Error while fetching movies with the provided filters',
+        404,
+        'No movies found matching the provided filters',
+      );
     }
     return movies;
   } catch (error) {
